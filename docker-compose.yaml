@@ -1,0 +1,60 @@
+version: '3.7'
+
+#you can include needed services to your network using docker-compose service merging :  docker-compose -f docker-compose.yml -f docker-composer.elk.yml up
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    ports:
+      - "8085:80"
+    volumes:
+      - ./:/app:cached
+    depends_on:
+      - db
+      #      - redis
+      - kafka
+  db:
+    image: mysql:5.7
+    volumes:
+      - ./data/db:/var/lib/mysql
+    environment:
+      - "MYSQL_ROOT_PASSWORD=rootpass"
+      - "MYSQL_DATABASE=dbname"
+      - "MYSQL_USER=dbuser"
+      - "MYSQL_PASSWORD=dbpass"
+    ports:
+      - "63311:3306"
+
+  #  redis:
+  #    image: redis
+  #    command: redis-server --appendonly yes
+  #    networks:
+  #      - local
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_CREATE_TOPICS: "index:5:1,oauthdata:5:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://kafka:9092
+
+#  kafka-manager:
+#    image: hlebalbau/kafka-manager
+#    depends_on:
+#      - kafka
+#      - zookeeper
+#    command: -Dpidfile.path=/dev/null
+#    environment:
+#      - ZK_HOSTS="localhost:2181"
+#      - APPLICATION_SECRET=random-secre
+#    ports:
+#      - "9003:9000"
+

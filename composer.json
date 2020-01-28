@@ -1,0 +1,23 @@
+{
+  "name": "microfin/core-kafka",
+  "type": "library",
+
+  "config": {
+    "preferred-install": {
+      "*": "dist"
+    },
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src"
+    }
+  },
+
+  "require": {
+    "php": "^7.2",
+    "ext-rdkafka": "4.*"
+  },
+  "require-dev": {
+  }
+}
