@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Microfin\CoreKafka\Produce\Exceptions;
+namespace Spartaques\CoreKafka\Produce\Exceptions;
 
 
 class KafkaProduceFlushNotImplementedException extends \Exception

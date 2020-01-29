@@ -1,7 +1,7 @@
 <?php
 
-use Microfin\CoreKafka\Consume\HighLevel\Consume;
-use Microfin\CoreKafka\Consume\HighLevel\ConsumeParamObject;
+use Spartaques\CoreKafka\Consume\HighLevel\Consume;
+use Spartaques\CoreKafka\Consume\HighLevel\ConsumeParamObject;
 
 require 'vendor/autoload.php';
 

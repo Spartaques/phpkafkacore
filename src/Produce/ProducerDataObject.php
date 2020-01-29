@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Microfin\CoreKafka\Produce;
+namespace Spartaques\CoreKafka\Produce;
 
 
 class ProducerDataObject

@@ -1,9 +1,9 @@
 <?php
 
-namespace Microfin\CoreKafka\Consume\HighLevel;
+namespace Spartaques\CoreKafka\Consume\HighLevel;
 
 use KafkaConsumeException;
-use Microfin\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
+use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 

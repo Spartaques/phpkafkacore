@@ -1,8 +1,8 @@
 <?php
 
-use Microfin\CoreKafka\Produce\Produce;
-use Microfin\CoreKafka\Produce\ProducerDataObject;
-use Microfin\CoreKafka\Produce\ProducerParamObject;
+use Spartaques\CoreKafka\Produce\Produce;
+use Spartaques\CoreKafka\Produce\ProducerDataObject;
+use Spartaques\CoreKafka\Produce\ProducerParamObject;
 
 require 'vendor/autoload.php';
 

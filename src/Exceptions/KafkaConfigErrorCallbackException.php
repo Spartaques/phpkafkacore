@@ -1,6 +1,6 @@
 <?php
 
-namespace Microfin\CoreKafka\Exceptions;
+namespace Spartaques\CoreKafka\Exceptions;
 
 class KafkaConfigErrorCallbackException extends \Exception
 {
