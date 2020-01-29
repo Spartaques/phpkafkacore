@@ -1,9 +1,29 @@
 # phpkafkacore
 kafka wrapper
 
+## Table of Contents
+
+1. [Using](#installation)
+2. [Examples](#examples)
+3. [Usage](#usage)
+   * [Producing](#producing)
+   * [High-level consuming](#high-level-consuming)
+   * [Low-level consuming](#low-level-consuming)
+   * [Low-level consuming form multiple topics / partitions](#low-level-consuming-from-multiple-topics--partitions)
+   * [Using stored offsets](#using-stored-offsets)
+   * [Interesting configuration parameters](#interesting-configuration-parameters)
+     * [queued.max.messages.kbytes](#queuedmaxmessageskbytes)
+     * [topic.metadata.refresh.sparse and topic.metadata.refresh.interval.ms](#topicmetadatarefreshsparse-and-topicmetadatarefreshintervalms)
+     * [internal.termination.signal](#internalterminationsignal)
+4. [Documentation](#documentation)
+5. [Credits](#credits)
+6. [License](#license)
+    
 **Эта библиотека является оберткой на rdkafka, и позволяет более удобно использовать библиотеку без необходимости понимания
 деталей работы rdkafka. Так же тут наведены примеры использования библиотеки с оптимальными настройками для определенных 
 кейсов, которые рекомендуется использовать.**
+
+
 
 Библиотека является независимой от фреймворков, что позволяет писать обертки.
 
@@ -12,6 +32,12 @@ kafka wrapper
 2) Framework-agnostic.
 3) HighLevel консюмер и автоматическая ребалансировка консюмеров, что позволяет не заботиться о дублировании сообщений.
 4) Возможность обрабатывать ошибки снаружи.
+
+## Using
+
+## Examples
+
+## Documentation
 
 # **Продюсер**
 
