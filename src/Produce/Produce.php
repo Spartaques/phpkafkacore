@@ -3,14 +3,14 @@
 
 namespace Spartaques\CoreKafka\Produce;
 
-use App\Produce\Exceptions\KafkaProduceFlushTimeoutException;
-use App\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
 use RdKafka\Conf;
 use RdKafka\Metadata;
 use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 use RdKafka\Topic;
 use RdKafka\TopicConf;
+use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
+use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushTimeoutException;
 
 class Produce
 {

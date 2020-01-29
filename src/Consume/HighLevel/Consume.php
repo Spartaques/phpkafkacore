@@ -6,6 +6,7 @@ use KafkaConsumeException;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
 
 class Consume
 {
@@ -24,7 +25,7 @@ class Consume
         $metadata = $this->consumer->getMetadata(true, null, 100);
         $brokers = $metadata->getBrokers();
         if(count($brokers) < 1 ) {
-            throw new \KafkaBrokerException();
+            throw new KafkaBrokerException();
         }
         $this->instantiated = true;
 
