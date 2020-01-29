@@ -3,22 +3,14 @@ kafka wrapper
 
 ## Table of Contents
 
-1. [Using](#installation)
-2. [Examples](#examples)
-3. [Usage](#usage)
+1. [Introduction](#introduction)
+2. [Using](#installation)
+3. [Examples](#examples)
+4. [Usage](#usage)
    * [Producing](#producing)
-   * [High-level consuming](#high-level-consuming)
-   * [Low-level consuming](#low-level-consuming)
-   * [Low-level consuming form multiple topics / partitions](#low-level-consuming-from-multiple-topics--partitions)
-   * [Using stored offsets](#using-stored-offsets)
-   * [Interesting configuration parameters](#interesting-configuration-parameters)
-     * [queued.max.messages.kbytes](#queuedmaxmessageskbytes)
-     * [topic.metadata.refresh.sparse and topic.metadata.refresh.interval.ms](#topicmetadatarefreshsparse-and-topicmetadatarefreshintervalms)
-     * [internal.termination.signal](#internalterminationsignal)
-4. [Documentation](#documentation)
-5. [Credits](#credits)
-6. [License](#license)
-    
+   * [Consuming](#high-level-consuming)
+5. [Documentation](#documentation)
+   
 **Эта библиотека является оберткой на rdkafka, и позволяет более удобно использовать библиотеку без необходимости понимания
 деталей работы rdkafka. Так же тут наведены примеры использования библиотеки с оптимальными настройками для определенных 
 кейсов, которые рекомендуется использовать.**
@@ -37,9 +29,7 @@ kafka wrapper
 
 ## Examples
 
-## Documentation
-
-# **Продюсер**
+### Producing
 
 ```php
 $producer = new Produce();
@@ -60,12 +50,12 @@ for ($i = 0; $i < 1; $i++) {
 
 $producer->flush(1000);
 ```
-ProducerParamObject - обьект который содержит имя топика, масив конфигураций для продюсера и для топика (в большинстве случаев)
+**ProducerParamObject** - обьект который содержит имя топика, масив конфигураций для продюсера и для топика (в большинстве случаев)
 используется только конфигурация продюсера.
 Метод instantiate инициализирует подключение только один раз, после чего каждый вызов produce на этом обьекте будет использовать
 существующее подключение.
-ProducerDataObject - обьект, который содержит само сообщение - payload (JSON), а так же номер партиции (нужно использовать всегда
- RD_KAFKA_PARTITION_UA таким образом KAFKA будет равномерно распределять сообщения между существующими партициями).
+**ProducerDataObject** - обьект, который содержит само сообщение - payload (JSON), а так же номер партиции (нужно использовать всегда
+ **RD_KAFKA_PARTITION_UA** таким образом KAFKA будет равномерно распределять сообщения между существующими партициями).
  Метод flush используется для того чтобы доставить сообщения из внутренней очереди в kafka, и принимает один аргумент - timeout в миллисекундах 
  за который сообщение должно быть доставлено.
 
@@ -80,7 +70,7 @@ ProducerDataObject - обьект, который содержит само со
 Описание того как работает продюсер:
 https://docs.confluent.io/current/installation/configuration/producer-configs.html#cp-config-producer
 
-# **Консюмер**
+### Consuming
 
 ```php
 $consumer = new Consume();
@@ -121,3 +111,7 @@ https://docs.confluent.io/current/installation/configuration/consumer-configs.ht
 https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 Про то как работает консюмер можно почитать тут:
 https://docs.confluent.io/current/clients/consumer.html 
+
+
+## Documentation
+
