@@ -10,10 +10,10 @@ $consumer = new Consume();
 $consumeDataObject = new ConsumeParamObject(
     ['group.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
-        'auto.offset.reset' => 'latest',
+        'auto.offset.reset' => 'smallest',
         ]
 );
 
-($consumer->instantiate($consumeDataObject)->consume(['hell'],function ($message) {
+$consumer->instantiate($consumeDataObject)->consume(['test'],function ($message) {
     var_dump($message);
-}));
+});

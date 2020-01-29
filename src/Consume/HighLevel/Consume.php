@@ -33,7 +33,7 @@ class Consume
 
     // An application should make sure to call consume() at regular intervals, even if no messages are expected, to serve any queued callbacks waiting to be called.
     // This is especially important when a rebalnce_cb has been registered as it needs to be called and handled properly to synchronize internal consumer state.
-    public function consume(array $topics, callable  $callback, int $timeout = 10000)
+    public function consume(array $topics, callable  $callback, int $timeout = 10000):void
     {
         $this->consumer->subscribe($topics);
 

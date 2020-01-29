@@ -10,7 +10,7 @@ services:
     ports:
       - "8085:80"
     volumes:
-      - ./:/app:cached
+      - ./:/app
     depends_on:
       #      - redis
       - kafka
@@ -24,6 +24,6 @@ services:
     ports:
       - "9092:9092"
     environment:
-      KAFKA_CREATE_TOPICS: "hell:10:1,oauthdata:5:1"
+      KAFKA_CREATE_TOPICS: "hell2:10:1,oauthdata:5:1,test:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENERS: PLAINTEXT://kafka:9092

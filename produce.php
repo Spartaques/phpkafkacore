@@ -9,12 +9,12 @@ require 'vendor/autoload.php';
 $producer = new Produce();
 
 $produceData = new ProducerParamObject(
-    'hell',
+    'test',
     ['metadata.broker.list' => 'kafka:9092'],
     []
 );
 
-for ($i = 0; $i < 10000; $i++) {
+for ($i = 0; $i < 1; $i++) {
     $producer->instantiate($produceData)->produce(new ProducerDataObject("Message $i",RD_KAFKA_PARTITION_UA));
 }
         $producer->flush(10000);
