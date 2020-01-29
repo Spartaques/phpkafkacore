@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Consume\HighLevel;
+namespace Microfin\CoreKafka\Consume\HighLevel;
 
 class ConsumeParamObject
 {

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Produce;
+namespace Microfin\CoreKafka\Produce;
 
 use App\Produce\Exceptions\KafkaProduceFlushTimeoutException;
 use App\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
@@ -33,7 +33,7 @@ class Produce
         return $this;
     }
 
-    public function produce(ProducerDataObject $dataObject): self
+    public function produce(ProducerDataObject $dataObject, $timeout = 0): self
     {
         $this->topic->produce(
             $dataObject->getPartition(),
@@ -42,7 +42,7 @@ class Produce
             $dataObject->getMessageKey()
         );
 
-        $this->producer->poll(0);
+        $this->producer->poll($timeout);
 
         return $this;
     }
@@ -57,7 +57,7 @@ class Produce
         }
 
         if (RD_KAFKA_RESP_ERR__TIMED_OUT === $result) {
-            throw new KafkaProduceFlushTimeoutException('Was unable to flush, messages might be lost!');
+            throw new KafkaProduceFlushTimeoutException('Flush timeout exception!!');
         }
 
         if(RD_KAFKA_RESP_ERR__NOT_IMPLEMENTED === $result) {

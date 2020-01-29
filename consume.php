@@ -1,7 +1,7 @@
 <?php
 
-use App\Consume\HighLevel\Consume;
-use App\Consume\HighLevel\ConsumeParamObject;
+use Microfin\CoreKafka\Consume\HighLevel\Consume;
+use Microfin\CoreKafka\Consume\HighLevel\ConsumeParamObject;
 
 require 'vendor/autoload.php';
 
@@ -13,6 +13,7 @@ $consumeDataObject = new ConsumeParamObject(
         'auto.offset.reset' => 'latest',
         ]
 );
-$consumer->instantiate($consumeDataObject)->consume(['oauthdata'], function ($message) {
+
+($consumer->instantiate($consumeDataObject)->consume(['hell'],function ($message) {
     var_dump($message);
-});
+}));
