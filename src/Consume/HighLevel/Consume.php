@@ -16,7 +16,7 @@ class Consume
 
     protected $instantiated = false;
 
-    public function instantiate(ConsumeParamObject $object)
+    public function instantiate(ConsumeParamObject $object,$connectionTimeout = 1000)
     {
         if($this->instantiated) {
             return $this;
@@ -26,7 +26,7 @@ class Consume
 
         $this->consumer = $this->instantiateConsumer($object);
 
-        $metadata = $this->consumer->getMetadata(true, null, 100);
+        $metadata = $this->consumer->getMetadata(true, null, $connectionTimeout);
 
         $brokers = $metadata->getBrokers();
         if(count($brokers) < 1 ) {

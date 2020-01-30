@@ -24,7 +24,8 @@
 
   "require": {
     "php": "^7.2",
-    "ext-rdkafka": "4.*"
+    "ext-rdkafka": "4.*",
+    "ext-pcntl": "*"
   },
   "minimum-stability": "dev",
   "prefer-stable": true
