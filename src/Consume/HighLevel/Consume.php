@@ -1,5 +1,7 @@
 <?php
 
+declare(ticks=1); // PHP internal, make signal handling work
+
 namespace Spartaques\CoreKafka\Consume\HighLevel;
 
 use KafkaConsumeException;
@@ -14,22 +16,44 @@ class Consume
 
     protected $instantiated = false;
 
-
     public function instantiate(ConsumeParamObject $object)
     {
         if($this->instantiated) {
             return $this;
         }
 
+        $this->defineSignalsHandling();
+
         $this->consumer = $this->instantiateConsumer($object);
+
         $metadata = $this->consumer->getMetadata(true, null, 100);
+
         $brokers = $metadata->getBrokers();
         if(count($brokers) < 1 ) {
             throw new KafkaBrokerException();
         }
+
         $this->instantiated = true;
 
         return $this;
+    }
+
+    private function defineSignalsHandling():void
+    {
+        if (extension_loaded('pcntl')) {
+            define('AMQP_WITHOUT_SIGNALS', false);
+
+            pcntl_signal(SIGTERM, [$this, 'signalHandler']);
+            pcntl_signal(SIGHUP, [$this, 'signalHandler']);
+            pcntl_signal(SIGINT, [$this, 'signalHandler']);
+            pcntl_signal(SIGQUIT, [$this, 'signalHandler']);
+            pcntl_signal(SIGUSR1, [$this, 'signalHandler']);
+            pcntl_signal(SIGUSR2, [$this, 'signalHandler']);
+            pcntl_signal(SIGALRM, [$this, 'alarmHandler']);
+        } else {
+            echo 'Unable to process signals.' . PHP_EOL;
+            exit(1);
+        }
     }
 
     // An application should make sure to call consume() at regular intervals, even if no messages are expected, to serve any queued callbacks waiting to be called.
@@ -115,6 +139,7 @@ class Consume
 
     public function close()
     {
+        echo 'Stopping consumer by closing connection.' . PHP_EOL;
         $this->consumer->close();
     }
 
@@ -130,5 +155,50 @@ class Consume
     public function getOffsetPositions(array $topicPartitions)
     {
         return $this->consumer->getOffsetPositions($topicPartitions);
+    }
+
+    private function signalHandler(int $signalNumber): void
+    {
+        echo 'Handling signal: #' . $signalNumber . PHP_EOL;
+
+        switch ($signalNumber) {
+            case SIGTERM:  // 15 : supervisor default stop
+            case SIGQUIT:  // 3  : kill -s QUIT
+                echo 'process closed with SIGQUIT'. PHP_EOL;
+                $this->consumer->close();
+                exit(1);
+                break;
+            case SIGINT:   // 2  : ctrl+c
+                echo 'process closed with SIGINT'. PHP_EOL;
+                $this->consumer->close();
+                exit(1);
+                break;
+            case SIGHUP:   // 1  : kill -s HUP
+//                $this->consumer->restart();
+                break;
+            case SIGUSR1:  // 10 : kill -s USR1
+                // send an alarm in 1 second
+                pcntl_alarm(1);
+                break;
+            case SIGUSR2:  // 12 : kill -s USR2
+                // send an alarm in 10 seconds
+                pcntl_alarm(10);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Alarm handler
+     *
+     * @param  int $signalNumber
+     * @return void
+     */
+    private function alarmHandler($signalNumber)
+    {
+        echo 'Handling alarm: #' . $signalNumber . PHP_EOL;
+
+        echo memory_get_usage(true) . PHP_EOL;
     }
 }

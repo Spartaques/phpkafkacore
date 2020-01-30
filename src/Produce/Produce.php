@@ -47,7 +47,7 @@ class Produce
         return $this;
     }
 
-    public function flush(int $ms = 100):void
+    public function flush(int $ms = 10000):void
     {
         for ($flushRetries = 0; $flushRetries < 10; $flushRetries++) {
             $result = $this->producer->flush($ms);

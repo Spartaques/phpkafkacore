@@ -9,6 +9,7 @@ $consumer = new Consume();
 
 $consumeDataObject = new ConsumeParamObject(
     ['group.id' => 'test',
+        'client.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
         'auto.offset.reset' => 'smallest',
         ]
