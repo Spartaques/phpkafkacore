@@ -3,14 +3,13 @@ kafka wrapper
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Test Usage](#test usage)
-3. [Examples](#examples)
-4. [Usage](#usage)
+1. [Introduction](#introduction) (Описано предназначение библиотеки)
+2. [Examples](#examples) (Примеры использования )
+3. [Usage](#usage) (Как использовать API)
    * [Producing](#producing)
    * [Consuming](#high-level-consuming)
    * [Proper Shutdown](#proper-shutdown)
-5. [Documentation](#documentation)
+5. [Documentation](#documentation) (Основные вещи которые нужно понимать)
    
 **Эта библиотека является оберткой на rdkafka, и позволяет более удобно использовать библиотеку без необходимости понимания
 деталей работы rdkafka. Так же тут наведены примеры использования библиотеки с оптимальными настройками для определенных 
@@ -26,14 +25,14 @@ kafka wrapper
 3) HighLevel консюмер и автоматическая ребалансировка консюмеров, что позволяет не заботиться о дублировании сообщений.
 4) Возможность обрабатывать ошибки снаружи.
 
-## Test Usage
+## Examples
 
 Чтобы потестировать как это все работает можно запустить
 docker-compose up
 php produce.php
 php consume.php
 
-## Examples
+## Usage
 
 ### Producing
 
