@@ -12,7 +12,7 @@ class ProducerParamObject
 
     public $topicConf;
 
-    public function __construct(string $topicName,array $kafkaConf,array $topicConf)
+    public function __construct(string $topicName,array $kafkaConf,array $topicConf = [])
     {
         $this->topicName = $topicName;
         $this->kafkaConf = $kafkaConf;
