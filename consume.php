@@ -1,13 +1,13 @@
 <?php
 
-use Spartaques\CoreKafka\Consume\HighLevel\Consume;
-use Spartaques\CoreKafka\Consume\HighLevel\ConsumeParamObject;
+use Spartaques\CoreKafka\Consume\HighLevel\ConsumerWrapper;
+use Spartaques\CoreKafka\Consume\HighLevel\ConsumerParamObject;
 
 require 'vendor/autoload.php';
 
-$consumer = new Consume();
+$consumer = new ConsumerWrapper();
 
-$consumeDataObject = new ConsumeParamObject(
+$consumeDataObject = new ConsumerParamObject(
     ['group.id' => 'test',
         'client.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
@@ -15,6 +15,6 @@ $consumeDataObject = new ConsumeParamObject(
         ]
 );
 
-$consumer->instantiate($consumeDataObject)->consume(['test'],function ($message) {
+$consumer->init($consumeDataObject)->consume(['test'],function ($message) {
     var_dump($message);
 });

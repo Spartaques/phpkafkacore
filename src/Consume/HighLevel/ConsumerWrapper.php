@@ -10,13 +10,13 @@ use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
 
-class Consume
+class ConsumerWrapper
 {
     protected $consumer;
 
     protected $instantiated = false;
 
-    public function instantiate(ConsumeParamObject $object,$connectionTimeout = 1000)
+    public function init(ConsumerParamObject $object,$connectionTimeout = 1000): ConsumerWrapper
     {
         if($this->instantiated) {
             return $this;
@@ -24,7 +24,7 @@ class Consume
 
         $this->defineSignalsHandling();
 
-        $this->consumer = $this->instantiateConsumer($object);
+        $this->consumer = $this->initConsumerConnection($object);
 
         $metadata = $this->consumer->getMetadata(true, null, $connectionTimeout);
 
@@ -85,7 +85,7 @@ class Consume
         }
     }
 
-    private function instantiateConsumer(ConsumeParamObject $object): KafkaConsumer
+    private function initConsumerConnection(ConsumerParamObject $object): KafkaConsumer
     {
         $kafkaConf = new Conf();
 

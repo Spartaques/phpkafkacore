@@ -1,12 +1,12 @@
 <?php
 
-use Spartaques\CoreKafka\Produce\Produce;
+use Spartaques\CoreKafka\Produce\ProducerWrapper;
 use Spartaques\CoreKafka\Produce\ProducerDataObject;
 use Spartaques\CoreKafka\Produce\ProducerParamObject;
 
 require 'vendor/autoload.php';
 
-$producer = new Produce();
+$producer = new ProducerWrapper();
 
 
 // producer initialization object
@@ -21,7 +21,7 @@ $produceData = new ProducerParamObject(
 
 for ($i = 0; $i < 1000; $i++) {
     // produce message using ProducerDataObject
-    $producer->instantiate($produceData)->produce(new ProducerDataObject("Message $i",RD_KAFKA_PARTITION_UA));
+    $producer->init($produceData)->produce(new ProducerDataObject("Message $i", RD_KAFKA_PARTITION_UA));
 }
 
 $producer->flush();

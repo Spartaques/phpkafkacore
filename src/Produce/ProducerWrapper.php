@@ -12,7 +12,7 @@ use RdKafka\TopicConf;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushTimeoutException;
 
-class Produce
+class ProducerWrapper
 {
     protected $producer;
 
@@ -20,7 +20,7 @@ class Produce
 
     protected $instantiated = false;
 
-    public function instantiate(ProducerParamObject $paramObject): self
+    public function init(ProducerParamObject $paramObject): self
     {
         if($this->instantiated) {
             return $this;

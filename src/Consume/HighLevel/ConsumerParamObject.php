@@ -2,7 +2,7 @@
 
 namespace Spartaques\CoreKafka\Consume\HighLevel;
 
-class ConsumeParamObject
+class ConsumerParamObject
 {
     public $kafkaConf;
     /**

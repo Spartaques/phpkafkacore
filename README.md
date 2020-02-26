@@ -37,7 +37,7 @@ php consume.php
 ### Producing
 
 ```php
-$producer = new Produce();
+$producer = new ProducerWrapper();
 // producer initialization object
 $produceData = new ProducerParamObject(
     'test',
@@ -50,7 +50,7 @@ $produceData = new ProducerParamObject(
 
 for ($i = 0; $i < 1; $i++) {
     // produce message using ProducerDataObject
-    $producer->instantiate($produceData)->produce(new ProducerDataObject("Message $i",RD_KAFKA_PARTITION_UA));
+    $producer->init($produceData)->produce(new ProducerDataObject("Message $i",RD_KAFKA_PARTITION_UA));
 }
 
 $producer->flush(1000);
@@ -77,16 +77,16 @@ https://docs.confluent.io/current/installation/configuration/producer-configs.ht
 ### Consuming
 
 ```php
-$consumer = new Consume();
+$consumer = new ConsumerWrapper();
 
-$consumeDataObject = new ConsumeParamObject(
+$consumeDataObject = new ConsumerParamObject(
     ['group.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
         'auto.offset.reset' => 'smallest',
         ]
 );
 
-$consumer->instantiate($consumeDataObject)->consume(['oauthdata'],function ($message) {
+$consumer->init($consumeDataObject)->consume(['oauthdata'],function ($message) {
     var_dump($message);
 });
 ```
