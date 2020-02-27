@@ -26,6 +26,6 @@
     "ext-rdkafka": "4.*",
     "ext-pcntl": "*"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true
 }
