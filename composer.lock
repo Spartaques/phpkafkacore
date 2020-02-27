@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2a22f9c957f4daa6df09710295ec4a1",
+    "content-hash": "09d39310e213d2db8421ce067faf924c",
     "packages": [],
     "packages-dev": [],
     "aliases": [],
@@ -14,7 +14,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^7.2",
-        "ext-rdkafka": "4.*"
+        "ext-rdkafka": "4.*",
+        "ext-pcntl": "*"
     },
     "platform-dev": []
 }
