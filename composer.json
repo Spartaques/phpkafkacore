@@ -2,7 +2,6 @@
   "name": "spartaques/phpcorekafka",
   "description": "Wrapper for php rdkafka",
   "type": "library",
-  "version": "1.0.0",
   "config": {
     "preferred-install": {
       "*": "dist"
