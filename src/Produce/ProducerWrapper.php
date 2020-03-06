@@ -9,6 +9,7 @@ use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 use RdKafka\Topic;
 use RdKafka\TopicConf;
+use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaTopicNameException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushTimeoutException;
 
@@ -86,6 +87,10 @@ class ProducerWrapper
 
         foreach ($paramObject->getTopicConf() as $key => $value) {
             $topicConf->set($key, $value);
+        }
+
+        if(empty($paramObject->getTopicName())) {
+            throw new KafkaTopicNameException();
         }
 
         return $this->producer->newTopic($paramObject->getTopicName(), $topicConf);
