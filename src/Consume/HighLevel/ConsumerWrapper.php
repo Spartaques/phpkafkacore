@@ -50,8 +50,8 @@ class ConsumerWrapper
         if(count($brokers) < 1 ) {
             throw new KafkaBrokerException();
         }
-
         $this->instantiated = true;
+
 
         return $this;
     }
@@ -150,14 +150,9 @@ class ConsumerWrapper
      * @param RdKafka\KafkaConsumerTopic|null $only_topic
      * @param int $timeout_ms
      * @return mixed
-     * @throws ConsumerShouldBeInstantiatedException
      */
-    public function getMetadata(bool $all_topics , RdKafka\KafkaConsumerTopic $only_topic = NULL , int $timeout_ms = 1000): RdKafka\Metadata
+    public function getMetadata(bool $all_topics , RdKafka\KafkaConsumerTopic $only_topic = NULL , int $timeout_ms = 1000): \RdKafka\Metadata
     {
-        if(!$this->instantiated) {
-            throw  new ConsumerShouldBeInstantiatedException();
-        }
-
         return $this->consumer->getMetadata($all_topics, $only_topic, $timeout_ms);
     }
 
