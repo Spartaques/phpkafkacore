@@ -10,6 +10,7 @@ use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
 use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * Class ConsumerWrapper
@@ -21,6 +22,11 @@ class ConsumerWrapper
      * @var
      */
     protected $consumer;
+
+    /**
+     * @var ConsoleOutput $output
+     */
+    private $output;
 
     /**
      * @var bool
@@ -40,6 +46,10 @@ class ConsumerWrapper
             return $this;
         }
 
+        $this->output = new ConsoleOutput();
+
+        $this->output->writeln('<comment>Consumer initialization...</comment>');
+
         $this->defineSignalsHandling();
 
         $this->consumer = $this->initConsumerConnection($object);
@@ -52,6 +62,7 @@ class ConsumerWrapper
         }
         $this->instantiated = true;
 
+        $this->output->writeln('<comment>Consumer initialized </comment>');
 
         return $this;
     }
@@ -68,8 +79,8 @@ class ConsumerWrapper
     {
         $this->consumer->subscribe($topics);
 
-        echo "Waiting for partition assignment... (make take some time when\n";
-        echo "quickly re-joining the group after leaving it.)\n";
+        $this->output->writeln('<info>Waiting for partition assignment... (make take some time when</info>');
+        $this->output->writeln('<info>quickly re-joining the group after leaving it</info>');
 
         while (true) {
             $message = $this->consumer->consume($timeout);
@@ -78,13 +89,38 @@ class ConsumerWrapper
                     $callback($message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-                    echo "No more messages; will wait for more\n";
+                    $this->output->writeln('<info>No more messages; will wait for more</info>');
                     break;
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    echo "Timed out\n";
+                    $this->output->writeln('<info>Timed out</info>');
                     break;
                 default:
-                    var_dump($message->err);
+                    $this->output->writeln('<error>'.$message->err.'</error>');
+                    throw new KafkaConsumeException($message->errstr(), $message->err);
+                    break;
+            }
+        }
+    }
+
+    public function consumeWithManualAssign(callable  $callback, int $timeout = 10000)
+    {
+        $this->output->writeln('<info>Waiting for partition assignment... (make take some time when</info>');
+        $this->output->writeln('<info>quickly re-joining the group after leaving it</info>');
+
+        while (true) {
+            $message = $this->consumer->consume($timeout);
+            switch ($message->err) {
+                case RD_KAFKA_RESP_ERR_NO_ERROR:
+                    $callback($message);
+                    break;
+                case RD_KAFKA_RESP_ERR__PARTITION_EOF:
+                    $this->output->writeln('<info>No more messages; will wait for more</info>');
+                    break;
+                case RD_KAFKA_RESP_ERR__TIMED_OUT:
+                    $this->output->writeln('<info>Timed out</info>');
+                    break;
+                default:
+                    $this->output->writeln('<error>'.$message->err.'</error>');
                     throw new KafkaConsumeException($message->errstr(), $message->err);
                     break;
             }
@@ -250,6 +286,17 @@ class ConsumerWrapper
         return $this->instantiated;
     }
 
+    public function assign( array $topic_partitions = null)
+    {
+        if(!$this->instantiated) {
+            throw  new ConsumerShouldBeInstantiatedException();
+        }
+
+        $this->consumer->assign($topic_partitions);
+
+        return $this;
+    }
+
     /**
      * @return callable
      */
@@ -258,13 +305,13 @@ class ConsumerWrapper
         return function (KafkaConsumer $kafka, $err, array $partitions = null) {
             switch ($err) {
                 case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
-                    echo "Assign: ";
+                    $this->output->writeln('<info>Assign: </info>');
                     var_dump($partitions);
                     $kafka->assign($partitions);
                     break;
 
                 case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
-                    echo "Revoke: ";
+                    $this->output->writeln('<error>Revoke: </error>');
                     var_dump($partitions);
                     $kafka->assign(NULL);
                     break;
@@ -290,7 +337,7 @@ class ConsumerWrapper
      */
     public function close()
     {
-        echo 'Stopping consumer by closing connection.' . PHP_EOL;
+        $this->output->writeln('<info>Stopping consumer by closing connection.</info>');
         $this->consumer->close();
     }
 
@@ -309,18 +356,18 @@ class ConsumerWrapper
      */
     private function signalHandler(int $signalNumber): void
     {
-        echo 'Handling signal: #' . $signalNumber . PHP_EOL;
+        $this->output->writeln('<error>'.'Handling signal: #' . $signalNumber.'</error>');
 
         switch ($signalNumber) {
             case SIGTERM:  // 15 : supervisor default stop
             case SIGQUIT:  // 3  : kill -s QUIT
                 echo 'process closed with SIGQUIT'. PHP_EOL;
-                $this->consumer->close();
+                $this->close();
                 exit(1);
                 break;
             case SIGINT:   // 2  : ctrl+c
                 echo 'process closed with SIGINT'. PHP_EOL;
-                $this->consumer->close();
+                $this->close();
                 exit(1);
                 break;
             case SIGHUP:   // 1  : kill -s HUP
@@ -358,8 +405,6 @@ class ConsumerWrapper
     private function defineSignalsHandling():void
     {
         if (extension_loaded('pcntl')) {
-            define('AMQP_WITHOUT_SIGNALS', false);
-
             pcntl_signal(SIGTERM, [$this, 'signalHandler']);
             pcntl_signal(SIGHUP, [$this, 'signalHandler']);
             pcntl_signal(SIGINT, [$this, 'signalHandler']);
@@ -368,7 +413,7 @@ class ConsumerWrapper
             pcntl_signal(SIGUSR2, [$this, 'signalHandler']);
             pcntl_signal(SIGALRM, [$this, 'alarmHandler']);
         } else {
-            echo 'Unable to process signals.' . PHP_EOL;
+            $this->output->writeln('<error>Unable to process signals.</error>');
             exit(1);
         }
     }

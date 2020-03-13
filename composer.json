@@ -23,8 +23,9 @@
 
   "require": {
     "php": "^7.2",
+    "ext-pcntl": "*",
     "ext-rdkafka": "4.*",
-    "ext-pcntl": "*"
+    "symfony/console": "^5.0"
   },
   "minimum-stability": "stable",
   "prefer-stable": true
