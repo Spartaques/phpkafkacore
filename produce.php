@@ -2,7 +2,7 @@
 
 use Spartaques\CoreKafka\Produce\ProducerWrapper;
 use Spartaques\CoreKafka\Produce\ProducerDataObject;
-use Spartaques\CoreKafka\Produce\ProducerParamObject;
+use Spartaques\CoreKafka\Produce\ProducerProperties;
 
 require 'vendor/autoload.php';
 
@@ -10,7 +10,7 @@ $producer = new ProducerWrapper();
 
 
 // producer initialization object
-$produceData = new ProducerParamObject(
+$produceData = new ProducerProperties(
     'test',
     [
         'metadata.broker.list' => 'kafka:9092',

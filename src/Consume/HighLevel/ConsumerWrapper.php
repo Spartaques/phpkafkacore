@@ -5,6 +5,7 @@ declare(ticks=1); // PHP internal, make signal handling work
 namespace Spartaques\CoreKafka\Consume\HighLevel;
 
 use KafkaConsumeException;
+use Spartaques\CoreKafka\Consume\HighLevel\Contracts\Callback;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\ConsumerShouldBeInstantiatedException;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
 use RdKafka\Conf;
@@ -34,13 +35,13 @@ class ConsumerWrapper
     protected $instantiated = false;
 
     /**
-     * @param ConsumerParamObject $object
+     * @param ConsumerProperties $consumerProperties
      * @param int $connectionTimeout
      * @return ConsumerWrapper
      * @throws ConsumerShouldBeInstantiatedException
      * @throws KafkaBrokerException
      */
-    public function init(ConsumerParamObject $object,$connectionTimeout = 1000): ConsumerWrapper
+    public function init(ConsumerProperties $consumerProperties,$connectionTimeout = 1000): ConsumerWrapper
     {
         if($this->instantiated) {
             return $this;
@@ -52,7 +53,7 @@ class ConsumerWrapper
 
         $this->defineSignalsHandling();
 
-        $this->consumer = $this->initConsumerConnection($object);
+        $this->consumer = $this->initConsumerConnection($consumerProperties);
 
         $metadata = $this->getMetadata(true, null, $connectionTimeout);
 
@@ -62,6 +63,8 @@ class ConsumerWrapper
         }
         $this->instantiated = true;
 
+        $this->output->writeln('<comment>Consumer Properties parsed </comment>');
+
         $this->output->writeln('<comment>Consumer initialized </comment>');
 
         return $this;
@@ -69,13 +72,14 @@ class ConsumerWrapper
 
     // An application should make sure to call consume() at regular intervals, even if no messages are expected, to serve any queued callbacks waiting to be called.
     // This is especially important when a rebalnce_cb has been registered as it needs to be called and handled properly to synchronize internal consumer state.
+
     /**
      * @param array $topics
-     * @param callable $callback
+     * @param $callback
      * @param int $timeout
      * @throws KafkaConsumeException
      */
-    public function consume(array $topics, callable  $callback, int $timeout = 10000):void
+    public function consume(array $topics,  $callback, int $timeout = 10000):void
     {
         $this->consumer->subscribe($topics);
 
@@ -86,7 +90,7 @@ class ConsumerWrapper
             $message = $this->consumer->consume($timeout);
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $callback($message);
+                    $this->callback($callback, $message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
                     $this->output->writeln('<info>No more messages; will wait for more</info>');
@@ -102,7 +106,12 @@ class ConsumerWrapper
         }
     }
 
-    public function consumeWithManualAssign(callable  $callback, int $timeout = 10000)
+    /**
+     * @param $callback
+     * @param int $timeout
+     * @throws KafkaConsumeException
+     */
+    public function consumeWithManualAssign($callback, int $timeout = 10000): void
     {
         $this->output->writeln('<info>Waiting for partition assignment... (make take some time when</info>');
         $this->output->writeln('<info>quickly re-joining the group after leaving it</info>');
@@ -111,7 +120,7 @@ class ConsumerWrapper
             $message = $this->consumer->consume($timeout);
             switch ($message->err) {
                 case RD_KAFKA_RESP_ERR_NO_ERROR:
-                    $callback($message);
+                    $this->callback($callback, $message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
                     $this->output->writeln('<info>No more messages; will wait for more</info>');
@@ -131,7 +140,7 @@ class ConsumerWrapper
      * @param mixed|null $message_or_offsets
      * @throws ConsumerShouldBeInstantiatedException
      */
-    public function commit($message_or_offsets = NULL):void
+    public function commitSync($message_or_offsets = NULL):void
     {
         if(!$this->instantiated) {
             throw  new ConsumerShouldBeInstantiatedException();
@@ -260,10 +269,10 @@ class ConsumerWrapper
     }
 
     /**
-     * @param ConsumerParamObject $object
+     * @param ConsumerProperties $object
      * @return KafkaConsumer
      */
-    private function initConsumerConnection(ConsumerParamObject $object): KafkaConsumer
+    private function initConsumerConnection(ConsumerProperties $object): KafkaConsumer
     {
         $kafkaConf = new Conf();
 
@@ -416,5 +425,25 @@ class ConsumerWrapper
             $this->output->writeln('<error>Unable to process signals.</error>');
             exit(1);
         }
+    }
+
+    /**
+     * @param $callback
+     * @param \RdKafka\Message $message
+     */
+    private function callback($callback, \RdKafka\Message $message): void
+    {
+        if($callback instanceof \Closure) {
+            $callback($message, $this);
+            return;
+        }
+
+        if($callback instanceof Callback) {
+            /** @var Callback $instance */
+            $callback->callback($message, $this);
+            return;
+        }
+
+        throw new \RuntimeException('wrong instance');
     }
 }

@@ -4,7 +4,7 @@
 namespace Spartaques\CoreKafka\Produce;
 
 
-class ProducerParamObject
+class ProducerProperties
 {
     public $topicName;
 

@@ -21,7 +21,7 @@ class ProducerWrapper
 
     protected $instantiated = false;
 
-    public function init(ProducerParamObject $paramObject): self
+    public function init(ProducerProperties $paramObject): self
     {
         if($this->instantiated) {
             return $this;
@@ -67,10 +67,10 @@ class ProducerWrapper
     }
 
     /**
-     * @param ProducerParamObject $paramObject
+     * @param ProducerProperties $paramObject
      * @return array
      */
-    private function instantiateProducer(ProducerParamObject $paramObject): Producer
+    private function instantiateProducer(ProducerProperties $paramObject): Producer
     {
         $kafkaConf = new Conf();
 
@@ -81,7 +81,7 @@ class ProducerWrapper
         return new Producer($kafkaConf);
     }
 
-    private function instantiateTopic(ProducerParamObject $paramObject): Topic
+    private function instantiateTopic(ProducerProperties $paramObject): Topic
     {
         $topicConf = new TopicConf();
 

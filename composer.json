@@ -17,7 +17,8 @@
   ],
   "autoload": {
     "psr-4": {
-      "Spartaques\\CoreKafka\\": "src"
+      "Spartaques\\CoreKafka\\": "src",
+      "Spartaques\\CoreKafka\\Examples\\": "Examples"
     }
   },
 
