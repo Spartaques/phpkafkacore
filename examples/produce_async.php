@@ -16,13 +16,9 @@ $callbacksInstance = new DefaultCallbacks();
 
 $collection = new CallbacksCollection(
     [
-        ConfigurationCallbacksKeys::CONSUME => $callbacksInstance->consume(),
         ConfigurationCallbacksKeys::DELIVERY_REPORT => $callbacksInstance->delivery(),
         ConfigurationCallbacksKeys::ERROR => $callbacksInstance->error(),
         ConfigurationCallbacksKeys::LOG => $callbacksInstance->log(),
-        ConfigurationCallbacksKeys::OFFSET_COMMIT => $callbacksInstance->commit(),
-        ConfigurationCallbacksKeys::REBALANCE => $callbacksInstance->rebalance(),
-        ConfigurationCallbacksKeys::STATISTICS => $callbacksInstance->statistics(),
     ]);
 
 // producer initialization object
@@ -31,17 +27,19 @@ $produceData = new ProducerProperties(
     [
         'metadata.broker.list' => 'kafka:9092',
         'client.id' => 'clientid',
+//        'debug' => 'all'
     ],
-    [
-        'partitioner' => 'consistent'
-    ],
+    [],
     $collection
 );
 
-for ($i = 0; $i < 1000; $i++) {
+for ($i = 0; $i < 100; $i++) {
     // produce message using ProducerDataObject
     $producer->init($produceData)->produce(new ProducerData("Message $i", RD_KAFKA_PARTITION_UA, 0, $i));
+var_dump($i);
+//    sleep(2);
 }
+
 
 $producer->flush();
 

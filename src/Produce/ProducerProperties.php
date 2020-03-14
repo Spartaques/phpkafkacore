@@ -4,19 +4,42 @@
 namespace Spartaques\CoreKafka\Produce;
 
 
+use Spartaques\CoreKafka\Common\CallbacksCollection;
+
 class ProducerProperties
 {
-    public $topicName;
+    /**
+     * @var string
+     */
+    private $topicName;
 
-    public $kafkaConf;
+    /**
+     * @var array
+     */
+    private $kafkaConf;
 
-    public $topicConf;
+    /**
+     * @var array
+     */
+    private $topicConf;
 
-    public function __construct(string $topicName,array $kafkaConf,array $topicConf = [])
+    /**
+     * @var CallbacksCollection
+     */
+    private $callbacksCollection;
+
+    /**
+     * ProducerProperties constructor.
+     * @param string $topicName
+     * @param array $kafkaConf
+     * @param array $topicConf
+     */
+    public function __construct(string $topicName,array $kafkaConf,array $topicConf = [], CallbacksCollection $callbacksCollection = null)
     {
         $this->topicName = $topicName;
         $this->kafkaConf = $kafkaConf;
         $this->topicConf = $topicConf;
+        $this->callbacksCollection = $callbacksCollection;
     }
 
     /**
@@ -41,5 +64,13 @@ class ProducerProperties
     public function getTopicConf(): array
     {
         return $this->topicConf;
+    }
+
+    /**
+     * @return CallbacksCollection
+     */
+    public function getCallbacksCollection(): ?CallbacksCollection
+    {
+        return $this->callbacksCollection;
     }
 }

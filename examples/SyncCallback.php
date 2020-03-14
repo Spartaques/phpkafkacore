@@ -10,7 +10,6 @@ class SyncCallback implements \Spartaques\CoreKafka\Consume\HighLevel\Contracts\
 
     public function callback(\RdKafka\Message $message, ConsumerWrapper $consumer)
     {
-        var_dump($message->offset);
         $consumer->commitSync();
     }
 }

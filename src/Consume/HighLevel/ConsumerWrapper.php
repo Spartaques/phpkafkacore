@@ -4,12 +4,14 @@ declare(ticks=1); // PHP internal, make signal handling work
 
 namespace Spartaques\CoreKafka\Consume\HighLevel;
 
-use KafkaConsumeException;
-use Spartaques\CoreKafka\Consume\HighLevel\Contracts\Callback;
-use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\ConsumerShouldBeInstantiatedException;
-use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaRebalanceCbException;
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use Spartaques\CoreKafka\Common\CallbacksCollection;
+use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
+use Spartaques\CoreKafka\Consume\HighLevel\Contracts\Callback;
+use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\ConsumerShouldBeInstantiatedException;
+use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaConsumeException;
+use Spartaques\CoreKafka\Consume\HighLevel\Vendor\Output;
 use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -20,14 +22,14 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 class ConsumerWrapper
 {
     /**
-     * @var
+     * @var KafkaConsumer $consumer
      */
     protected $consumer;
 
     /**
      * @var ConsoleOutput $output
      */
-    private $output;
+    protected $output;
 
     /**
      * @var bool
@@ -47,15 +49,15 @@ class ConsumerWrapper
             return $this;
         }
 
-        $this->output = new ConsoleOutput();
+        $this->output = new Output();
 
-        $this->output->writeln('<comment>Consumer initialization...</comment>');
+        $this->output->comment('Consumer initialization...');
 
         $this->defineSignalsHandling();
 
-        $this->consumer = $this->initConsumerConnection($consumerProperties);
+        $this->consumer = $this->initConsumerConnection($consumerProperties, $consumerProperties->getCallbacksCollection());
 
-        $metadata = $this->getMetadata(true, null, $connectionTimeout);
+        $metadata = $this->consumer->getMetadata(true, null, $connectionTimeout);
 
         $brokers = $metadata->getBrokers();
         if(count($brokers) < 1 ) {
@@ -63,9 +65,7 @@ class ConsumerWrapper
         }
         $this->instantiated = true;
 
-        $this->output->writeln('<comment>Consumer Properties parsed </comment>');
-
-        $this->output->writeln('<comment>Consumer initialized </comment>');
+        $this->output->comment('Consumer initialized');
 
         return $this;
     }
@@ -83,8 +83,8 @@ class ConsumerWrapper
     {
         $this->consumer->subscribe($topics);
 
-        $this->output->writeln('<info>Waiting for partition assignment... (make take some time when</info>');
-        $this->output->writeln('<info>quickly re-joining the group after leaving it</info>');
+        $this->output->info('Waiting for partition assignment... (make take some time when');
+        $this->output->info('quickly re-joining the group after leaving it');
 
         while (true) {
             $message = $this->consumer->consume($timeout);
@@ -93,13 +93,13 @@ class ConsumerWrapper
                     $this->callback($callback, $message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-                    $this->output->writeln('<info>No more messages; will wait for more</info>');
+                    $this->output->info('No more messages; will wait for more');
                     break;
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    $this->output->writeln('<info>Timed out</info>');
+                    $this->output->info('Timed out');
                     break;
                 default:
-                    $this->output->writeln('<error>'.$message->err.'</error>');
+                    $this->output->error($message->err);
                     throw new KafkaConsumeException($message->errstr(), $message->err);
                     break;
             }
@@ -113,8 +113,8 @@ class ConsumerWrapper
      */
     public function consumeWithManualAssign($callback, int $timeout = 10000): void
     {
-        $this->output->writeln('<info>Waiting for partition assignment... (make take some time when</info>');
-        $this->output->writeln('<info>quickly re-joining the group after leaving it</info>');
+        $this->output->info('Waiting for partition assignment... (make take some time when');
+        $this->output->info('quickly re-joining the group after leaving it');
 
         while (true) {
             $message = $this->consumer->consume($timeout);
@@ -123,13 +123,13 @@ class ConsumerWrapper
                     $this->callback($callback, $message);
                     break;
                 case RD_KAFKA_RESP_ERR__PARTITION_EOF:
-                    $this->output->writeln('<info>No more messages; will wait for more</info>');
+                    $this->output->info('No more messages; will wait for more');
                     break;
                 case RD_KAFKA_RESP_ERR__TIMED_OUT:
-                    $this->output->writeln('<info>Timed out</info>');
+                    $this->output->info('Timed out');
                     break;
                 default:
-                    $this->output->writeln('<error>'.$message->err.'</error>');
+                    $this->output->info($message->err);
                     throw new KafkaConsumeException($message->errstr(), $message->err);
                     break;
             }
@@ -191,17 +191,6 @@ class ConsumerWrapper
     }
 
     /**
-     * @param bool $all_topics
-     * @param RdKafka\KafkaConsumerTopic|null $only_topic
-     * @param int $timeout_ms
-     * @return mixed
-     */
-    public function getMetadata(bool $all_topics , RdKafka\KafkaConsumerTopic $only_topic = NULL , int $timeout_ms = 1000): \RdKafka\Metadata
-    {
-        return $this->consumer->getMetadata($all_topics, $only_topic, $timeout_ms);
-    }
-
-    /**
      * @return array
      * @throws ConsumerShouldBeInstantiatedException
      */
@@ -212,21 +201,6 @@ class ConsumerWrapper
         }
 
         return  $this->consumer->getSubscription();
-    }
-
-    /**
-     * @param array $topicPartitions
-     * @param int $timeout_ms
-     * @return array
-     * @throws ConsumerShouldBeInstantiatedException
-     */
-    public function offsetsForTimes(array $topicPartitions , int $timeout_ms = 1000): array
-    {
-        if(!$this->instantiated) {
-            throw  new ConsumerShouldBeInstantiatedException();
-        }
-
-        return $this->consumer->offsetsForTimes($topicPartitions, $timeout_ms);
     }
 
     /**
@@ -269,20 +243,32 @@ class ConsumerWrapper
     }
 
     /**
-     * @param ConsumerProperties $object
+     * @param ConsumerProperties $consumerProperties
      * @return KafkaConsumer
      */
-    private function initConsumerConnection(ConsumerProperties $object): KafkaConsumer
+    private function initConsumerConnection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): KafkaConsumer
     {
         $kafkaConf = new Conf();
 
-        foreach ($object->getKafkaConf() as $key => $value) {
+        foreach ($consumerProperties->getKafkaConf() as $key => $value) {
             $kafkaConf->set($key, $value);
         }
 
-        $kafkaConf->setRebalanceCb($object->getRebalanceCbCallback() ?? $this->defaultRebalanceCb());
+        /**
+         * @var \Closure $callback
+         */
+        foreach ($callbacksCollection as $key => $callback) {
+            switch ($key) {
+                case ConfigurationCallbacksKeys::CONSUME: {$kafkaConf->setConsumeCb($callback->bindTo($this));} break;
+                case ConfigurationCallbacksKeys::ERROR: {$kafkaConf->setErrorCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::LOG: {$kafkaConf->setLogCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::OFFSET_COMMIT: {$kafkaConf->setOffsetCommitCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::REBALANCE: {$kafkaConf->setRebalanceCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::STATISTICS: {$kafkaConf->setStatsCb($callback->bindTo($this)); break;}
+            }
+        }
 
-        $kafkaConf->setErrorCb($this->errorCb());
+        $this->output->comment('callbacks registered');
 
         return new KafkaConsumer($kafkaConf);
     }
@@ -295,6 +281,11 @@ class ConsumerWrapper
         return $this->instantiated;
     }
 
+    /**
+     * @param array|null $topic_partitions
+     * @return $this
+     * @throws ConsumerShouldBeInstantiatedException
+     */
     public function assign( array $topic_partitions = null)
     {
         if(!$this->instantiated) {
@@ -307,38 +298,11 @@ class ConsumerWrapper
     }
 
     /**
-     * @return callable
+     * @return ConsoleOutput
      */
-    private function defaultRebalanceCb():callable
+    public function getOutput(): ConsoleOutput
     {
-        return function (KafkaConsumer $kafka, $err, array $partitions = null) {
-            switch ($err) {
-                case RD_KAFKA_RESP_ERR__ASSIGN_PARTITIONS:
-                    $this->output->writeln('<info>Assign: </info>');
-                    var_dump($partitions);
-                    $kafka->assign($partitions);
-                    break;
-
-                case RD_KAFKA_RESP_ERR__REVOKE_PARTITIONS:
-                    $this->output->writeln('<error>Revoke: </error>');
-                    var_dump($partitions);
-                    $kafka->assign(NULL);
-                    break;
-
-                default:
-                    throw new KafkaRebalanceCbException($err);
-            }
-        };
-    }
-
-    /**
-     * @return callable
-     */
-    private function errorCb():callable
-    {
-        return function ($kafka, $err, $reason) {
-            throw new \KafkaConfigErrorCallbackException("Kafka error: %s (reason: %s)\n", rd_kafka_err2str($err), $reason);
-        };
+        return $this->output;
     }
 
     /**
@@ -346,7 +310,7 @@ class ConsumerWrapper
      */
     public function close()
     {
-        $this->output->writeln('<info>Stopping consumer by closing connection.</info>');
+        $this->output->info('Stopping consumer by closing connection');
         $this->consumer->close();
     }
 
@@ -365,7 +329,7 @@ class ConsumerWrapper
      */
     private function signalHandler(int $signalNumber): void
     {
-        $this->output->writeln('<error>'.'Handling signal: #' . $signalNumber.'</error>');
+        $this->output->error('Handling signal: #' . $signalNumber);
 
         switch ($signalNumber) {
             case SIGTERM:  // 15 : supervisor default stop
@@ -375,7 +339,7 @@ class ConsumerWrapper
                 exit(1);
                 break;
             case SIGINT:   // 2  : ctrl+c
-                echo 'process closed with SIGINT'. PHP_EOL;
+                $this->output->warn('process closed with SIGINT');
                 $this->close();
                 exit(1);
                 break;
@@ -403,9 +367,7 @@ class ConsumerWrapper
      */
     private function alarmHandler($signalNumber)
     {
-        echo 'Handling alarm: #' . $signalNumber . PHP_EOL;
-
-        echo memory_get_usage(true) . PHP_EOL;
+        $this->output->warn("Handling alarm: # . $signalNumber. memory usage: ". memory_get_usage(true));
     }
 
     /**
@@ -422,7 +384,7 @@ class ConsumerWrapper
             pcntl_signal(SIGUSR2, [$this, 'signalHandler']);
             pcntl_signal(SIGALRM, [$this, 'alarmHandler']);
         } else {
-            $this->output->writeln('<error>Unable to process signals.</error>');
+            $this->output->error('Unable to process signal.');
             exit(1);
         }
     }
@@ -445,5 +407,10 @@ class ConsumerWrapper
         }
 
         throw new \RuntimeException('wrong instance');
+    }
+
+    private function registerConfigurationCallbacks( CallbacksCollection $callbacksCollection)
+    {
+
     }
 }

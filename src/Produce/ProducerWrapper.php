@@ -9,32 +9,86 @@ use RdKafka\Producer;
 use RdKafka\ProducerTopic;
 use RdKafka\Topic;
 use RdKafka\TopicConf;
+use Spartaques\CoreKafka\Common\CallbacksCollection;
+use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaTopicNameException;
+use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushTimeoutException;
 
+/**
+ * Class ProducerWrapper
+ * @package Spartaques\CoreKafka\Produce
+ */
 class ProducerWrapper
 {
+    /**
+     * @var
+     */
     protected $producer;
 
+    /**
+     * @var
+     */
     protected $topic;
 
+    /**
+     * @var Conf $kafkaConf
+     */
+    protected $kafkaConf;
+
+    /**
+     * @var TopicConf $topicConf
+     */
+    protected $topicConf;
+
+    /**
+     * @var bool
+     */
     protected $instantiated = false;
 
-    public function init(ProducerProperties $paramObject): self
+    /**
+     * @param ProducerProperties $producerProperties
+     * @param $
+     * @param int $connectionTimeout
+     * @return $this
+     * @throws KafkaBrokerException
+     * @throws KafkaTopicNameException
+     */
+    public function init(ProducerProperties $producerProperties, $connectionTimeout = 1000): self
     {
-        if($this->instantiated) {
+        if ($this->instantiated) {
             return $this;
         }
 
-        $this->producer =  $this->instantiateProducer($paramObject);
-        $this->topic = $this->instantiateTopic($paramObject);
+        $this->producer = $this->initProducer($producerProperties);
+
+
+        $metadata = $this->producer->getMetadata(true, null, $connectionTimeout);
+
+        $brokers = $metadata->getBrokers();
+
+
+        if(count($brokers) < 1 ) {
+            throw new KafkaBrokerException();
+        }
+
+        $this->topic = $this->instantiateTopic($producerProperties);
+
+        if($producerProperties->getCallbacksCollection() !== null) {
+            $this->registerConfigurationCallbacks($this->kafkaConf, $producerProperties->getCallbacksCollection());
+        }
         $this->instantiated = true;
 
         return $this;
     }
 
-    public function produce(ProducerDataObject $dataObject, $timeout = 0): self
+    /**
+     * @param ProducerData $dataObject
+     * @param int $timeout
+     * @return $this
+     */
+    public function produce(ProducerData $dataObject, $timeout = 0): self
     {
         $this->topic->produce(
             $dataObject->getPartition(),
@@ -48,7 +102,30 @@ class ProducerWrapper
         return $this;
     }
 
-    public function flush(int $ms = 10000):void
+    /**
+     *
+     */
+    public function produceWithHeaders(ProducerData $dataObject, $timeout = 0)
+    {
+        $this->topic->producev(
+            $dataObject->getPartition(),
+            $dataObject->getMsgFlags(),
+            $dataObject->getPayload(),
+            $dataObject->getMessageKey(),
+            $dataObject->getHeaders()
+        );
+
+        $this->producer->poll($timeout);
+
+        return $this;
+    }
+
+    /**
+     * @param int $ms
+     * @throws KafkaProduceFlushNotImplementedException
+     * @throws KafkaProduceFlushTimeoutException
+     */
+    public function flush(int $ms = 10000): void
     {
         for ($flushRetries = 0; $flushRetries < 10; $flushRetries++) {
             $result = $this->producer->flush($ms);
@@ -61,39 +138,44 @@ class ProducerWrapper
             throw new KafkaProduceFlushTimeoutException('Flush timeout exception!!');
         }
 
-        if(RD_KAFKA_RESP_ERR__NOT_IMPLEMENTED === $result) {
+        if (RD_KAFKA_RESP_ERR__NOT_IMPLEMENTED === $result) {
             throw new KafkaProduceFlushNotImplementedException('Was unable to flush, messages might be lost!');
         }
     }
 
     /**
-     * @param ProducerProperties $paramObject
+     * @param ProducerProperties $producerProperties
      * @return array
      */
-    private function instantiateProducer(ProducerProperties $paramObject): Producer
+    private function initProducer(ProducerProperties $producerProperties): Producer
     {
-        $kafkaConf = new Conf();
+        $this->kafkaConf = new Conf();
 
-        foreach ($paramObject->getKafkaConf() as $key => $value) {
-            $kafkaConf->set($key, $value);
+        foreach ($producerProperties->getKafkaConf() as $key => $value) {
+            $this->kafkaConf->set($key, $value);
         }
 
-        return new Producer($kafkaConf);
+        return new Producer($this->kafkaConf);
     }
 
-    private function instantiateTopic(ProducerProperties $paramObject): Topic
+    /**
+     * @param ProducerProperties $producerProperties
+     * @return Topic
+     * @throws KafkaTopicNameException
+     */
+    private function instantiateTopic(ProducerProperties $producerProperties): Topic
     {
-        $topicConf = new TopicConf();
+        $this->topicConf = new TopicConf();
 
-        foreach ($paramObject->getTopicConf() as $key => $value) {
-            $topicConf->set($key, $value);
+        foreach ($producerProperties->getTopicConf() as $key => $value) {
+            $this->topicConf->set($key, $value);
         }
 
-        if(empty($paramObject->getTopicName())) {
+        if (empty($producerProperties->getTopicName())) {
             throw new KafkaTopicNameException();
         }
 
-        return $this->producer->newTopic($paramObject->getTopicName(), $topicConf);
+        return $this->producer->newTopic($producerProperties->getTopicName(), $this->topicConf);
     }
 
     /**
@@ -102,5 +184,19 @@ class ProducerWrapper
     public function isInstantiated(): bool
     {
         return $this->instantiated;
+    }
+
+    private function registerConfigurationCallbacks(Conf $conf, CallbacksCollection $callbacksCollection)
+    {
+        /**
+         * @var \Closure $callback
+         */
+        foreach ($callbacksCollection as $key => $callback) {
+            switch ($key) {
+                case ConfigurationCallbacksKeys::DELIVERY_REPORT: { $conf->setDrMsgCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::ERROR: {$conf->setErrorCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::LOG: {$conf->setLogCb($callback->bindTo($this)); break;}
+            }
+        }
     }
 }

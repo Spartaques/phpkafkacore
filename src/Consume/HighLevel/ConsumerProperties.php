@@ -2,18 +2,33 @@
 
 namespace Spartaques\CoreKafka\Consume\HighLevel;
 
+use Spartaques\CoreKafka\Common\CallbacksCollection;
+
+/**
+ * Class ConsumerProperties
+ * @package Spartaques\CoreKafka\Consume\HighLevel
+ */
 class ConsumerProperties
 {
+    /**
+     * @var array
+     */
     public $kafkaConf;
     /**
-     * @var callable
+     * @var CallbacksCollection
      */
-    private $rebalanceCbCallback;
+    private $callbacksCollection;
 
-    public function __construct(array $kafkaConf, callable $rebalanceCbCallback = null)
+
+    /**
+     * ConsumerProperties constructor.
+     * @param array $kafkaConf
+     * @param CallbacksCollection $callbacksCollection
+     */
+    public function __construct(array $kafkaConf, CallbacksCollection $callbacksCollection = null)
     {
         $this->kafkaConf = $kafkaConf;
-        $this->rebalanceCbCallback = $rebalanceCbCallback;
+        $this->callbacksCollection = $callbacksCollection;
     }
 
     /**
@@ -25,10 +40,10 @@ class ConsumerProperties
     }
 
     /**
-     * @return callable
+     * @return CallbacksCollection
      */
-    public function getRebalanceCbCallback(): ?callable
+    public function getCallbacksCollection(): ?CallbacksCollection
     {
-        return $this->rebalanceCbCallback;
+        return $this->callbacksCollection;
     }
 }

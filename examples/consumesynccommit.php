@@ -1,15 +1,14 @@
 <?php
 
+
 use Spartaques\CoreKafka\Common\CallbacksCollection;
 use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
 use Spartaques\CoreKafka\Common\DefaultCallbacks;
-use Spartaques\CoreKafka\Produce\ProducerWrapper;
-use Spartaques\CoreKafka\Produce\ProducerData;
-use Spartaques\CoreKafka\Produce\ProducerProperties;
+use Spartaques\CoreKafka\Consume\HighLevel\ConsumerProperties;
+use Spartaques\CoreKafka\Consume\HighLevel\ConsumerWrapper;
+use Spartaques\CoreKafka\Examples\SyncCallback;
 
 require 'vendor/autoload.php';
-
-$producer = new ProducerWrapper();
 
 $callbacksInstance = new DefaultCallbacks();
 
@@ -23,25 +22,23 @@ $collection = new CallbacksCollection(
         ConfigurationCallbacksKeys::OFFSET_COMMIT => $callbacksInstance->commit(),
         ConfigurationCallbacksKeys::REBALANCE => $callbacksInstance->rebalance(),
         ConfigurationCallbacksKeys::STATISTICS => $callbacksInstance->statistics(),
-    ]);
+    ]
+);
 
-// producer initialization object
-$produceData = new ProducerProperties(
-    'test123',
+$consumer = new ConsumerWrapper();
+
+$consumeDataObject = new ConsumerProperties(
     [
+        'group.id' => 'test1',
+        'client.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
-        'client.id' => 'clientid',
-    ],
-    [
-        'partitioner' => 'consistent'
+        'auto.offset.reset' => 'smallest',
+        'enable.auto.commit' => "false",
+//        'auto.commit.interval.ms' => 0
     ],
     $collection
 );
 
-for ($i = 0; $i < 1000; $i++) {
-    // produce message using ProducerDataObject
-    $producer->init($produceData)->produce(new ProducerData("Message $i", RD_KAFKA_PARTITION_UA, 0, $i));
-}
 
-$producer->flush();
-
+// ітак, питання в тому як передати обєкт  ConsumerWrapper у всі коллбеки?
+$consumer->init($consumeDataObject)->consume(['test123'], new SyncCallback());
