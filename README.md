@@ -26,9 +26,9 @@ composer require spartaques/phpcorekafka
 
 There are some things, that you should know before creating a topic for your application.
 
-1. Message ordering
-2. Replication factor
-3. Count of partitions
+1. **Message ordering**
+2. **Replication factor**
+3. **Count of partitions**
 
 About ordering: **any events that need to stay in a fixed order must go in the same topic** (and they must also use the same partitioning key). So, as a rule of thumb, we could say that all events about the same entity need to go in the same topic. Partition key described below.
 
@@ -40,10 +40,10 @@ Partitions is scaling unit in kafka, so we must know our data and calculate prop
 
 The most important things to know about producing is:
 
-1. mode (sync, async, fire & forget)?
-2. configurations
-3. messages order
-4.  payload schema.
+1. **mode (sync, async, fire & forget)**
+2. **configurations**
+3. **messages order**
+4.  **payload schema**
 
 1. Because kafka works in async mode by default, we can loose some messages if smth went wrong with broker. To avoid this, we can simply wait for response from broker.
 
@@ -88,12 +88,13 @@ For more advanced using https://avro.apache.org/ serializer should be used.
 
 # Consuming
 
-1. Committing
+1. **Committing**
 
-2. rebalancing 
-3. configurations
+2. **rebalancing** 
 
-1. Depend on data that should be processed, we can choose what behaviour is appropriate for us.
+3. **configurations**
+
+Depend on data that should be processed, we can choose what behaviour is appropriate for us.
 
 If duplication or loosing is not a problem, automatic commit (that works by default) is appropriate for us.
 
@@ -115,23 +116,23 @@ Example: src/Common/DefaultCallbacks.php ,  syncRebalance().
 
 most important configuration parameters:
 
-**enable.auto.commit** - This parameter controls whether the consumer will commit offsets automatically, and defaults to true.
+***enable.auto.commit** - This parameter controls whether the consumer will commit offsets automatically, and defaults to true.*
 
-**fetch.min.bytes** - This property allows a consumer to specify the minimum amount of data that it wants to receive from the broker when fetching records. 
+***fetch.min.bytes** - This property allows a consumer to specify the minimum amount of data that it wants to receive from the broker when fetching records.* 
 
-**fetch.max.wait.ms** - By setting fetch.min.bytes, you tell Kafka to wait until it has enough data to send before responding to the consumer. 
+***fetch.max.wait.ms** - By setting fetch.min.bytes, you tell Kafka to wait until it has enough data to send before responding to the consumer.* 
 
-**max.partition.fetch.bytes** - This property controls the maximum number of bytes the server will return per parti‐ tion. The default is 1 MB.
+***max.partition.fetch.bytes** - This property controls the maximum number of bytes the server will return per parti‐ tion. The default is 1 MB.*
 
-**session.timeout.ms** - The amount of time a consumer can be out of contact with the brokers while still considered alive defaults to 3 seconds.
+***session.timeout.ms** - The amount of time a consumer can be out of contact with the brokers while still considered alive defaults to 3 seconds.*
 
-**auto.offset.reset** - This property controls the behavior of the consumer when it starts reading a partition for which it doesn’t have a committed offset or if the committed offset it has is invalid (usually because the consumer was down for so long that the record with that offset was already aged out of the broker). 
+***auto.offset.reset** - This property controls the behavior of the consumer when it starts reading a partition for which it doesn’t have a committed offset or if the committed offset it has is invalid (usually because the consumer was down for so long that the record with that offset was already aged out of the broker).* 
 
-**max.poll.records** - This controls the maximum number of records that a single call to poll() will return.
+***max.poll.records** - This controls the maximum number of records that a single call to poll() will return.*
 
-receive.buffer.bytes and send.buffer.bytes - These are the sizes of the TCP send and receive buffers used by the sockets when writing and reading data.
+***receive.buffer.bytes and send.buffer.bytes** - These are the sizes of the TCP send and receive buffers used by the sockets when writing and reading data.*
 
-For more info: https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+*For more info: https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md*
 
 
 
