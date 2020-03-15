@@ -45,7 +45,8 @@ The most important things to know about producing is:
 3. **messages order**
 4.  **payload schema**
 
-1. Because kafka works in async mode by default, we can loose some messages if smth went wrong with broker. To avoid this, we can simply wait for response from broker.
+
+1 Because kafka works in async mode by default, we can loose some messages if smth went wrong with broker. To avoid this, we can simply wait for response from broker.
 
 examples/producesync.php describes sync producing. We simply use timeout for produce message, that means we wait for response from server.
 
@@ -53,7 +54,7 @@ examples/produce_async.php describes async producing. We just use 0 as timeout v
 
 Dont forget to call flush() to be sure that all events are published when using async mode. It's related to php because php dies after each request, so some events might lost.
 
-2. We should understand what we need from producer and broker. All things can be configured for best result.
+2 We should understand what we need from producer and broker. All things can be configured for best result.
 
 The most important configuration parameters for producer:
 
@@ -67,11 +68,11 @@ The most important configuration parameters for producer:
 
 *etc...*
 
-3. Kafka use ordering strategy (partitioner) to deliver messages to partitions depends on use case. https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md describes partitioner parameter that handle this.
+3 Kafka use ordering strategy (partitioner) to deliver messages to partitions depends on use case. https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md describes partitioner parameter that handle this.
 
 example: examples/produceorder.php
 
-*Always use RD_KAFKA_PARTITION_UA as partition number. Kafka will care about everything.*
+*TIP: Always use RD_KAFKA_PARTITION_UA as partition number. Kafka will care about everything.*
 
 In most of the situations, ordering is not important. But if we, for example, use kafka for storing client, fact that client address info came before general info is not appropriate.
 
@@ -80,9 +81,9 @@ So, in such situations, we have 2 choise:
 1. Use only 1 partition and 1 consumer, so messages will be handled in one order.
 2. Use many partitions and consumers, but messages related to some entity should always go to one partition. Kafka consistent hashing and partitioner handle for us this case by default. (Using Rabbitmq for example, you should write this logic yourself).
 
-4. Message payload schema should be clean and simple, and contain only data that are used.
+4 Message payload schema should be clean and simple, and contain only data that are used.
 
-For more advanced using https://avro.apache.org/ serializer should be used.
+For more advanced schema, use https://avro.apache.org/ serializer.
 
 
 
@@ -94,13 +95,15 @@ For more advanced using https://avro.apache.org/ serializer should be used.
 
 3. **configurations**
 
-Depend on data that should be processed, we can choose what behaviour is appropriate for us.
 
-If duplication or loosing is not a problem, automatic commit (that works by default) is appropriate for us.
+1 Depend on data that should be processed, we can choose what behaviour is appropriate for us.
+
+If duplication or loosing is not a problem, using  automatic commit (that works by default) will be good decision.
 
 When we want to avoid such behaviour, we should use manual commit.
 
 Manual commit works only when **enable.auto.commit** is set to false, and have 2 mode:
+
 
 1) Synchronous - commit last offset after processing message.    example: examples/consumesynccommit.php
 
@@ -108,11 +111,13 @@ Manual commit works only when **enable.auto.commit** is set to false, and have 2
 
 3) Autocommit (by default) - examples/consumeautocommit.php
 
-2. Rebalancing is a process of reassigning partitions to available consumers. It starts by consumers leader when it not receive heartbeats by one of the consumers after some period. When we use manual commit mode, we should commit offset before rebalancing starts.
+
+2   Rebalancing is a process of reassigning partitions to available consumers. It starts by consumers leader when it not receive heartbeats by one of the consumers after some period. When we use manual commit mode, we should commit offset before rebalancing starts.
 
 Example: src/Common/DefaultCallbacks.php ,  syncRebalance().
 
-3. configurations
+
+3  configurations
 
 most important configuration parameters:
 
