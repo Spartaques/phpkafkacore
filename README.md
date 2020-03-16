@@ -2,7 +2,7 @@
 
 This library is a *pure PHP* wrapper for https://arnaud.le-blanc.net/php-rdkafka-doc/phpdoc/book.rdkafka.html. It's been tested against https://kafka.apache.org/.
 
-The library was used for the PHP projects to simplify work and handle common use cases.
+The library was used for the PHP projects to simplify work and handle common use cases. Inspired by https://github.com/php-amqplib/php-amqplib
 
 ## Project Maintainers
 
