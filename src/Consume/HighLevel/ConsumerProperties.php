@@ -25,7 +25,7 @@ class ConsumerProperties
      * @param array $kafkaConf
      * @param CallbacksCollection $callbacksCollection
      */
-    public function __construct(array $kafkaConf, CallbacksCollection $callbacksCollection = null)
+    public function __construct(array $kafkaConf, CallbacksCollection $callbacksCollection)
     {
         $this->kafkaConf = $kafkaConf;
         $this->callbacksCollection = $callbacksCollection;
@@ -42,7 +42,7 @@ class ConsumerProperties
     /**
      * @return CallbacksCollection
      */
-    public function getCallbacksCollection(): ?CallbacksCollection
+    public function getCallbacksCollection(): CallbacksCollection
     {
         return $this->callbacksCollection;
     }

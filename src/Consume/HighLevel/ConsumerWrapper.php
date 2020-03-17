@@ -244,6 +244,7 @@ class ConsumerWrapper
 
     /**
      * @param ConsumerProperties $consumerProperties
+     * @param CallbacksCollection $callbacksCollection
      * @return KafkaConsumer
      */
     private function initConsumerConnection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): KafkaConsumer
