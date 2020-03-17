@@ -4,11 +4,9 @@
 namespace Spartaques\CoreKafka\Common;
 
 
-use Exception;
-use Traversable;
+use IteratorAggregate;
 
-
-class CallbacksCollection implements \Traversable, \IteratorAggregate
+class CallbacksCollection implements IteratorAggregate
 {
     protected $items;
 
