@@ -45,10 +45,6 @@ class ConsumerWrapper
         if($this->instantiated) {
             return $this;
         }
-        exit;
-
-        echo class_exists(\Spartaques\CoreKafka\Consume\HighLevel\VendorExtends\Output::class);
-
 
         $this->output = new Output();
 
