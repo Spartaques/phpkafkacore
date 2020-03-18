@@ -11,9 +11,8 @@ use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
 use Spartaques\CoreKafka\Consume\HighLevel\Contracts\Callback;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\ConsumerShouldBeInstantiatedException;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaConsumeException;
-use Spartaques\CoreKafka\Consume\HighLevel\Vendor\Output;
+use Spartaques\CoreKafka\Consume\HighLevel\VendorExtends\Output;
 use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
-use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * Class ConsumerWrapper
@@ -26,9 +25,7 @@ class ConsumerWrapper
      */
     protected $consumer;
 
-    /**
-     * @var ConsoleOutput $output
-     */
+
     protected $output;
 
     /**
@@ -48,6 +45,10 @@ class ConsumerWrapper
         if($this->instantiated) {
             return $this;
         }
+        exit;
+
+        echo class_exists(\Spartaques\CoreKafka\Consume\HighLevel\VendorExtends\Output::class);
+
 
         $this->output = new Output();
 
@@ -299,9 +300,9 @@ class ConsumerWrapper
     }
 
     /**
-     * @return ConsoleOutput
+     * @return Output
      */
-    public function getOutput(): ConsoleOutput
+    public function getOutput(): Output
     {
         return $this->output;
     }
@@ -408,10 +409,5 @@ class ConsumerWrapper
         }
 
         throw new \RuntimeException('wrong instance');
-    }
-
-    private function registerConfigurationCallbacks( CallbacksCollection $callbacksCollection)
-    {
-
     }
 }
