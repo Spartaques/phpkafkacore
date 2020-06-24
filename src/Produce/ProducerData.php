@@ -32,7 +32,7 @@ class ProducerData
     /**
      * @var array
      */
-    private $headers;
+    public $headers;
 
     /**
      * ProducerDataObject constructor.
