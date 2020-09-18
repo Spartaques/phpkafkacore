@@ -32,7 +32,7 @@ $consumeDataObject = new ConsumerProperties(
         'group.id' => 'test1',
         'client.id' => 'test',
         'metadata.broker.list' => 'kafka:9092',
-        'auto.offset.reset' => 'smallest',
+        'auto.offset.reset' => 'latest',
         'enable.auto.commit' => "false",
 //        'auto.commit.interval.ms' => 0
     ],

@@ -31,6 +31,8 @@ class ConfigurationCallbacksKeys
 
     const STATISTICS = 'statistics';
 
+    const THROTTLE = 'throttle';
+
     const CALLBACKS_MAP = [
         self::STATISTICS,
         self::REBALANCE,

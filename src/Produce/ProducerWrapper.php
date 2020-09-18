@@ -12,6 +12,7 @@ use RdKafka\TopicConf;
 use Spartaques\CoreKafka\Common\CallbacksCollection;
 use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
 use Spartaques\CoreKafka\Consume\HighLevel\Exceptions\KafkaTopicNameException;
+use Spartaques\CoreKafka\Consume\HighLevel\VendorExtends\Output;
 use Spartaques\CoreKafka\Exceptions\KafkaBrokerException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushNotImplementedException;
 use Spartaques\CoreKafka\Produce\Exceptions\KafkaProduceFlushTimeoutException;
@@ -46,6 +47,10 @@ class ProducerWrapper
      * @var bool
      */
     protected $instantiated = false;
+    /**
+     * @var Output
+     */
+    private $output;
 
     /**
      * @param ProducerProperties $producerProperties
@@ -60,6 +65,8 @@ class ProducerWrapper
         if ($this->instantiated) {
             return $this;
         }
+
+        $this->output = new Output();
 
         $this->producer = $this->initProducer($producerProperties);
 
@@ -86,9 +93,10 @@ class ProducerWrapper
     /**
      * @param ProducerData $dataObject
      * @param int $timeout
+     * @param bool $poll
      * @return $this
      */
-    public function produce(ProducerData $dataObject, $timeout = 0): self
+    public function produce(ProducerData $dataObject, int $timeout = 0, bool $poll = true): self
     {
         $this->topic->produce(
             $dataObject->getPartition(),
@@ -97,15 +105,20 @@ class ProducerWrapper
             $dataObject->getMessageKey()
         );
 
-        $this->producer->poll($timeout);
+        if($poll) {
+            $this->producer->poll($timeout);
+        }
 
         return $this;
     }
 
     /**
-     *
+     * @param ProducerData $dataObject
+     * @param int $timeout
+     * @param bool $poll
+     * @return ProducerWrapper
      */
-    public function produceWithHeaders(ProducerData $dataObject, $timeout = 0)
+    public function produceWithHeaders(ProducerData $dataObject,int  $timeout = 0,bool $poll = true)
     {
         $this->topic->producev(
             $dataObject->getPartition(),
@@ -115,9 +128,16 @@ class ProducerWrapper
             $dataObject->getHeaders()
         );
 
-        $this->producer->poll($timeout);
+        if($poll) {
+            $this->producer->poll($timeout);
+        }
 
         return $this;
+    }
+
+    public function poll(int  $timeout = 0)
+    {
+            $this->producer->poll($timeout);
     }
 
     /**
@@ -153,6 +173,18 @@ class ProducerWrapper
 
         foreach ($producerProperties->getKafkaConf() as $key => $value) {
             $this->kafkaConf->set($key, $value);
+        }
+
+        /**
+         * @var \Closure $callback
+         */
+        foreach ($producerProperties->getCallbacksCollection() as $key => $callback) {
+            switch ($key) {
+                case ConfigurationCallbacksKeys::DELIVERY_REPORT: {$this->kafkaConf->setDrMsgCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::THROTTLE: {$this->kafkaConf->setThrottleCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::ERROR: {$this->kafkaConf->setErrorCb($callback->bindTo($this)); break;}
+                case ConfigurationCallbacksKeys::STATISTICS: {$this->kafkaConf->setStatsCb($callback->bindTo($this)); break;}
+            }
         }
 
         return new Producer($this->kafkaConf);
@@ -198,5 +230,13 @@ class ProducerWrapper
                 case ConfigurationCallbacksKeys::LOG: {$conf->setLogCb($callback->bindTo($this)); break;}
             }
         }
+    }
+
+    /**
+     * @return Output
+     */
+    public function getOutput(): Output
+    {
+        return $this->output;
     }
 }

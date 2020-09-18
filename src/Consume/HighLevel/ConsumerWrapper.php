@@ -257,7 +257,7 @@ class ConsumerWrapper
          */
         foreach ($callbacksCollection as $key => $callback) {
             switch ($key) {
-                case ConfigurationCallbacksKeys::CONSUME: {$kafkaConf->setConsumeCb($callback->bindTo($this));} break;
+                case ConfigurationCallbacksKeys::CONSUME: {$kafkaConf->setConsumeCb($callback->bindTo($this)); break;}
                 case ConfigurationCallbacksKeys::ERROR: {$kafkaConf->setErrorCb($callback->bindTo($this)); break;}
                 case ConfigurationCallbacksKeys::LOG: {$kafkaConf->setLogCb($callback->bindTo($this)); break;}
                 case ConfigurationCallbacksKeys::OFFSET_COMMIT: {$kafkaConf->setOffsetCommitCb($callback->bindTo($this)); break;}

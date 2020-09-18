@@ -90,7 +90,7 @@ class DefaultCallbacks
      */
     public function delivery(): \Closure
     {
-        return function (Kafka $kafka, Message $message) {
+        return function ($kafka, $message) {
             if ($message->err) {
                 $this->getOutput()->warn('message permanently failed to be delivered');
             } else {
