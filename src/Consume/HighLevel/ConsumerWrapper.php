@@ -244,7 +244,7 @@ class ConsumerWrapper
      * @param CallbacksCollection $callbacksCollection
      * @return KafkaConsumer
      */
-    private function initConsumerConnection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): KafkaConsumer
+    protected function initConsumerConnection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): KafkaConsumer
     {
         $kafkaConf = new Conf();
 
@@ -325,7 +325,7 @@ class ConsumerWrapper
     /**
      * @param int $signalNumber
      */
-    private function signalHandler(int $signalNumber): void
+    protected function signalHandler(int $signalNumber): void
     {
         $this->output->error('Handling signal: #' . $signalNumber);
 
@@ -363,7 +363,7 @@ class ConsumerWrapper
      * @param  int $signalNumber
      * @return void
      */
-    private function alarmHandler($signalNumber)
+    protected function alarmHandler($signalNumber)
     {
         $this->output->warn("Handling alarm: # . $signalNumber. memory usage: ". memory_get_usage(true));
     }
@@ -371,7 +371,7 @@ class ConsumerWrapper
     /**
      *
      */
-    private function defineSignalsHandling():void
+    protected function defineSignalsHandling():void
     {
         if (extension_loaded('pcntl')) {
             pcntl_signal(SIGTERM, [$this, 'signalHandler']);
@@ -391,7 +391,7 @@ class ConsumerWrapper
      * @param $callback
      * @param \RdKafka\Message $message
      */
-    private function callback($callback, \RdKafka\Message $message): void
+    protected function callback($callback, \RdKafka\Message $message): void
     {
         if($callback instanceof \Closure) {
             $callback($message, $this);
