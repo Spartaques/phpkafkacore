@@ -6,6 +6,8 @@ namespace Spartaques\CoreKafka\Consume\HighLevel;
 
 use RdKafka\Conf;
 use RdKafka\KafkaConsumer;
+use RdKafka\Consumer;
+use RdKafka\ConsumerTopic;
 use Spartaques\CoreKafka\Common\CallbacksCollection;
 use Spartaques\CoreKafka\Common\ConfigurationCallbacksKeys;
 use Spartaques\CoreKafka\Consume\HighLevel\Contracts\Callback;
@@ -25,6 +27,7 @@ class ConsumerWrapper
      */
     protected $consumer;
 
+    protected $oldConsumer;
 
     protected $output;
 
@@ -99,6 +102,54 @@ class ConsumerWrapper
                     $this->output->error($message->err);
                     throw new KafkaConsumeException($message->errstr(), $message->err);
                     break;
+            }
+        }
+    }
+
+    public function initOld(string $brokerList, ConsumerProperties $consumerProperties,$connectionTimeout = 1000)
+    {
+        if($this->instantiated) {
+            return $this;
+        }
+
+        $this->output = new Output();
+
+        $this->output->comment('Old Consumer initialization...');
+
+        $this->defineSignalsHandling();
+
+        $this->oldConsumer = $this->initOldConsumerCollection($consumerProperties, $consumerProperties->getCallbacksCollection());
+
+        $this->oldConsumer->addBrokers($brokerList);
+
+        $metadata = $this->oldConsumer->getMetadata(true, null, $connectionTimeout);
+
+        $brokers = $metadata->getBrokers();
+        if(count($brokers) < 1 ) {
+            throw new KafkaBrokerException();
+        }
+        $this->instantiated = true;
+
+        $this->output->comment('Old Consumer initialized');
+
+        return $this;
+    }
+
+    public function consumeBatch(string $topic, int $partition , int $timeout_ms , int $batch_size, $callback, $topicConf = null ): array
+    {
+        $consumeTopic = $this->oldConsumer->newTopic($topic, $topicConf);
+
+        $this->output->info('batch consuming...');
+
+        $consumeTopic->consumeStart($partition, RD_KAFKA_OFFSET_STORED);
+
+        while (true) {
+            $messages = $consumeTopic->consumeBatch($partition, $timeout_ms, $batch_size);
+
+            if($messages === null) {
+                $this->output->info('Timed out');
+            } else {
+                $this->callbackBatch($callback, $messages);
             }
         }
     }
@@ -246,6 +297,16 @@ class ConsumerWrapper
      */
     public function initConsumerConnection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): KafkaConsumer
     {
+        return new KafkaConsumer($this->getKafkaConf($consumerProperties, $callbacksCollection));
+    }
+
+    public function initOldConsumerCollection(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection): Consumer
+    {
+        return new Consumer($this->getKafkaConf($consumerProperties, $callbacksCollection));
+    }
+
+    private function getKafkaConf(ConsumerProperties $consumerProperties, CallbacksCollection $callbacksCollection)
+    {
         $kafkaConf = new Conf();
 
         foreach ($consumerProperties->getKafkaConf() as $key => $value) {
@@ -268,7 +329,7 @@ class ConsumerWrapper
 
         $this->output->comment('callbacks registered');
 
-        return new KafkaConsumer($kafkaConf);
+        return $kafkaConf;
     }
 
     /**
@@ -308,8 +369,13 @@ class ConsumerWrapper
      */
     public function close()
     {
-        $this->output->info('Stopping consumer by closing connection');
-        $this->consumer->close();
+        if($this->consumer !== null) {
+            $this->output->info('Stopping consumer by closing connection');
+            $this->consumer->close();
+        } else {
+            $this->output->info('flushing old consumer...');
+            $this->oldConsumer->flush(-1);
+        }
     }
 
 
@@ -401,6 +467,26 @@ class ConsumerWrapper
         if($callback instanceof Callback) {
             /** @var Callback $instance */
             $callback->callback($message, $this);
+            return;
+        }
+
+        throw new \RuntimeException('wrong instance');
+    }
+
+    /**
+     * @param $callback
+     * @param array $messages
+     */
+    public function callbackBatch($callback, array $messages): void
+    {
+        if($callback instanceof \Closure) {
+            $callback($messages, $this);
+            return;
+        }
+
+        if($callback instanceof Callback) {
+            /** @var Callback $instance */
+            $callback->callback($messages, $this);
             return;
         }
 

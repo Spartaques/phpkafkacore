@@ -29,14 +29,15 @@ $produceData = new ProducerProperties(
         'client.id' => 'clientid',
     ],
     [
-        'partitioner' => 'consistent'
     ],
     $collection
 );
 
-for ($i = 0; $i < 10; $i++) {
+for ($i = 0; $i < 1000000; $i++) {
+    var_dump($i);
+
     // produce message using ProducerDataObject
-    $producer->init($produceData)->produce(new ProducerData("Message $i", RD_KAFKA_PARTITION_UA, 0, $i), 100);
+    $producer->init($produceData)->produce(new ProducerData("Message $i", 0));
 }
 
 $producer->flush();
