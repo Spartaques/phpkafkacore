@@ -38,12 +38,9 @@ class ConsumerWrapper
 
     /**
      * @param ConsumerProperties $consumerProperties
-     * @param int $connectionTimeout
      * @return ConsumerWrapper
-     * @throws ConsumerShouldBeInstantiatedException
-     * @throws KafkaBrokerException
      */
-    public function init(ConsumerProperties $consumerProperties,$connectionTimeout = 1000): ConsumerWrapper
+    public function init(ConsumerProperties $consumerProperties): ConsumerWrapper
     {
         if($this->instantiated) {
             return $this;
@@ -57,12 +54,6 @@ class ConsumerWrapper
 
         $this->consumer = $this->initConsumerConnection($consumerProperties, $consumerProperties->getCallbacksCollection());
 
-        $metadata = $this->consumer->getMetadata(true, null, $connectionTimeout);
-
-        $brokers = $metadata->getBrokers();
-        if(count($brokers) < 1 ) {
-            throw new KafkaBrokerException();
-        }
         $this->instantiated = true;
 
         $this->output->comment('Consumer initialized');
@@ -106,7 +97,7 @@ class ConsumerWrapper
         }
     }
 
-    public function initOld(string $brokerList, ConsumerProperties $consumerProperties,$connectionTimeout = 1000)
+    public function initOld(string $brokerList, ConsumerProperties $consumerProperties)
     {
         if($this->instantiated) {
             return $this;
@@ -122,12 +113,6 @@ class ConsumerWrapper
 
         $this->oldConsumer->addBrokers($brokerList);
 
-        $metadata = $this->oldConsumer->getMetadata(true, null, $connectionTimeout);
-
-        $brokers = $metadata->getBrokers();
-        if(count($brokers) < 1 ) {
-            throw new KafkaBrokerException();
-        }
         $this->instantiated = true;
 
         $this->output->comment('Old Consumer initialized');

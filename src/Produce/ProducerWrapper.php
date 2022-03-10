@@ -49,29 +49,16 @@ class ProducerWrapper
 
     /**
      * @param ProducerProperties $producerProperties
-     * @param $
-     * @param int $connectionTimeout
      * @return $this
-     * @throws KafkaBrokerException
      * @throws KafkaTopicNameException
      */
-    public function init(ProducerProperties $producerProperties, $connectionTimeout = 1000): self
+    public function init(ProducerProperties $producerProperties): self
     {
         if ($this->instantiated) {
             return $this;
         }
 
         $this->producer = $this->initProducer($producerProperties);
-
-
-        $metadata = $this->producer->getMetadata(true, null, $connectionTimeout);
-
-        $brokers = $metadata->getBrokers();
-
-
-        if(count($brokers) < 1 ) {
-            throw new KafkaBrokerException();
-        }
 
         $this->topic = $this->instantiateTopic($producerProperties);
 
