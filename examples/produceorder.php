@@ -33,11 +33,24 @@ $produceData = new ProducerProperties(
     $collection
 );
 
-for ($i = 0; $i < 1000000; $i++) {
+$json = json_encode([
+   'sfqsf' => 'fwqdfwfqwfqwf',
+   1 => 'fwqdfwfqwfqwf' ,
+   2 => 'fwqdfwfqwfqwf' ,
+   3 => 'fwqdfwfqwfqwf' ,
+   4 => 'fwqdfwfqwfqwf' ,
+   5 => 'fwqdfwfqwfqwf' ,
+   6 => 'fwqdfwfqwfqwf' ,
+   7 => 'fwqdfwfqwfqwf' ,
+   8 => 'fwqdfwfqwfqwf' ,
+   9 => 'fwqdfwfqwfqwf'
+]);
+
+for ($i = 0; $i < 100; $i++) {
     var_dump($i);
 
     // produce message using ProducerDataObject
-    $producer->init($produceData)->produce(new ProducerData("Message $i", 0));
+    $producer->init($produceData)->produce(new ProducerData($json, 0));
 }
 
 $producer->flush();
